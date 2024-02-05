@@ -1,5 +1,6 @@
 package conwaygame;
 import java.util.ArrayList;
+import java.util.HashSet;
 /**
  * Conway's Game of Life Class holds various methods that will
  * progress the state of the game's board through it's many iterations/generations.
@@ -40,15 +41,15 @@ public class GameOfLife {
     * Constructor used that will take in values to create a grid with a given number
     * of alive cells
     * @param file is the input file with the initial game pattern formatted as follows:
-    * An integer representing the number of grid r, say r
+    * An integer representing the number of grid row, say r
     * An integer representing the number of grid columns, say c
     * Number of r lines, each containing c true or false values (true denotes an ALIVE cell)
     */
     public GameOfLife (String file) {
         StdIn.setFile(file);
-        int r = StdIn.readInt();
-        int c = StdIn.readInt();
-        grid = new boolean[r][c];
+        int r = StdIn.readInt();  //number of rows
+        int c = StdIn.readInt();  // number of columns
+        grid = new boolean[r][c]; //making a grid using r and c
 
         for(int i = 0; i < r; i++) {
             for(int j = 0; j < c; j++) {
@@ -92,6 +93,7 @@ public class GameOfLife {
 
         int trueCounter = 0;
 
+        //This for loop checks if each cell is alive or not alive, if alive, then counter goes up
         for(int i = 0; i < grid.length; i++) {
             for(int j = 0; j < grid[i].length;  j++) {
                 if (grid[i][j] == ALIVE) {
@@ -100,6 +102,7 @@ public class GameOfLife {
             }
         }
 
+        //if counter is greater or equal to 1 then the grid is alive
         if (trueCounter >= 1) {
             return true;
         } else {
@@ -118,51 +121,25 @@ public class GameOfLife {
      */
     public int numOfAliveNeighbors (int row, int col) {
 
-        int count = 0;
+        int neighboringCells = 0;
         int r = grid.length;
         int c = grid[0].length;
 
-        int[][] neighbors = {
+        //checks the neighbors or its proximity
+        int[][] proximity = {
             {row -1, col - 1}, {row -1, col}, {row -1, col +1},
             {row, col -1},                    {row, col + 1}, 
             {row + 1, col -1}, {row +1, col}, {row +1, col+1}
         };
-        for(int[] n : neighbors) {
-            int nr = (n[0] + r) % r;
-            int nc = (n[1] + c) % c;
+        for(int[] p : proximity) {
+            int pr = (p[0] + r) % r;
+            int pc = (p[1] + c) % c;
 
-            if(grid[nr][nc]) {
-                count++;
+            if(grid[pr][pc]) {
+                neighboringCells++;
             }
         }
-        return count;
-        // int count = 0;
-        // if(grid[row-1][col-1] == true) {
-        //     count++;
-        // }
-        // if(grid[row-1][col] == true) {
-        //     count++;
-        // }
-        // if(grid[row-1][col+1] == true) {
-        //     count++;
-        // }
-        // if(grid[row][col-1] == true) {
-        //     count++;
-        // }
-        // if(grid[row][col+1] == true) {
-        //     count++;
-        // }
-        // if(grid[row+1][col-1] == true) {
-        //     count++;
-        // }
-        // if(grid[row+1][col] == true) {
-        //     count++;
-        // }
-        // if(grid[row+1][col+1] == true) {
-        //     count++;
-        // }
-
-        // return count;
+        return neighboringCells;
     }
 
     /**
@@ -178,6 +155,8 @@ public class GameOfLife {
 
         boolean[][] newGrid = new boolean[row][col];
 
+
+        //the rules are online
         for(int i = 0; i < grid.length; i++) {
             for(int j = 0; j < grid[i].length; j++) {
                 if(grid[i][j] == ALIVE) {
@@ -194,7 +173,6 @@ public class GameOfLife {
                     }
                 }
             }
-            System.out.println();
         }
 
         return newGrid;// update this line, provided so that code compiles
@@ -208,6 +186,16 @@ public class GameOfLife {
      */
     public void nextGeneration () {
         grid = computeNewGrid();
+        int count = 0;
+        
+        for(int i = 0; i < grid.length; i++) {
+            for(int j = 0; j < grid[i].length; j++) {
+                if(grid[i][j]) {
+                    count++;
+                }
+            }
+        }
+        totalAliveCells = count;
     }
 
     /**
@@ -227,7 +215,56 @@ public class GameOfLife {
      */
     public int numOfCommunities() {
 
-        // WRITE YOUR CODE HERE
-        return 0; // update this line, provided so that code compiles
+        WeightedQuickUnionUF union = new WeightedQuickUnionUF(grid.length, grid[0].length);
+        ArrayList<Integer> find = new ArrayList<>();
+        
+
+        for(int i = 0; i < grid.length; i++) {
+            for(int j = 0; j < grid[i].length; j++) {
+                if(grid[i][j] == ALIVE) {
+                    int r = grid.length;
+                    int c = grid[0].length;
+            
+                    int[][] proximity = {
+                        {i - 1, j - 1}, {i - 1, j}, {i - 1, j +1},
+                        {i, j - 1},                 {i, j + 1}, 
+                        {i + 1, j - 1}, {i + 1, j}, {i + 1, j + 1}
+                    };
+                    for(int[] p : proximity) {
+                        int pr = (p[0] + r) % r;
+                        int pc = (p[1] + c) % c;
+            
+                        if(grid[pr][pc]) {
+                            union.union(i, j, pr, pc);
+                        }
+                    }
+                }
+            }
+        }
+
+        for(int i = 0; i < grid.length; i++) {
+            for(int j = 0; j < grid[i].length; j++) {
+                if(grid[i][j] == ALIVE) {
+                    find.add(union.find(i,j));
+                }
+            }
+        }        
+        
+        if(find.size() == 0) {
+            return 0;
+        }
+
+        HashSet<Integer> h = new HashSet<>(find);
+
+        // a.add(find.get(0));
+
+        // for(int num : find) {
+        //     for(int i = 0; i < a.size(); i++) {
+        //         if(num != a.get(i)) {
+        //             a.add(num);
+        //         }
+        //     }
+        // }
+        return h.size();
     }
 }
