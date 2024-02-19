@@ -1,5 +1,6 @@
 package climate;
 
+
 /**
  * This class contains the Community Node, with a String containing the
  * community's name, a next pointer containing the next Community in the list,

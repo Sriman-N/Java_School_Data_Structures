@@ -2,6 +2,7 @@ package climate;
 
 import java.util.ArrayList;
 
+
 /**
  * This class contains methods which perform various operations on a layered 
  * linked list structure that contains USA communitie's Climate and Economic information.
