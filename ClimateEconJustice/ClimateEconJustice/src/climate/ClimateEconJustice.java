@@ -1,5 +1,6 @@
 package climate;
 
+import javax.swing.plaf.nimbus.State;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -74,19 +75,27 @@ public class ClimateEconJustice {
         StateNode cur = null;
         StateNode prev = null;
         String[] lineArray = inputLine.split(",");
-        
+
+        //creates a new StateNode state
         StateNode state = new StateNode(lineArray[2], null, null);
+
+        //if firstState is null then state becomes firstState, else the statenode cur will become the first state
         if(firstState == null) {
             firstState = state;
         } else {
              prev = null;
              cur = firstState;
         }
-        
+
+        //traversing through the state node
         while(cur != null) {
+
+            //if state's name is equal to cur's name, then do nothing
             if(cur.getName().equals(state.getName())) {
                 return;
             }
+
+            //traversing through the state node by setting the prev to cur and cur to the next node
             prev = cur;
             cur = cur.getNext();
         }
@@ -232,23 +241,40 @@ public class ClimateEconJustice {
         StateNode curS = firstState;
         int count = 0;
 
-
+        //traversing through the state node
         while(curS != null) {
             CountyNode curC = curS.getDown();
+            //traversing through the county node
             while(curC != null) {
                 CommunityNode curCom = curC.getDown();
-
+                double percentage = 0.0;
+                //traversing through the community node
                 while(curCom != null) {
+                    //gets the data from each community
                     Data data = curCom.getInfo();
-                    double percentage = switch (race) {
-                        case "African American" -> data.getPrcntAfricanAmerican() * 100;
-                        case "Native American" -> data.getPrcntNative() * 100;
-                        case "Asian American" -> data.getPrcntAsian() * 100;
-                        case "White American" -> data.getPrcntWhite() * 100;
-                        case "Hispanic American" -> data.getPrcntHispanic() * 100;
-                        default -> 0.0;
-                    };
 
+                    //goes through each 'race' choice
+                    switch (race) {
+                        case "African American":
+                            percentage = data.getPrcntAfricanAmerican() * 100;
+                            break;
+                        case "Native American":
+                            percentage = data.getPrcntNative() * 100;
+                            break;
+                        case "Asian American":
+                            percentage = data.getPrcntAsian() * 100;
+                            break;
+                        case "White American":
+                            percentage = data.getPrcntWhite() * 100;
+                            break;
+                        case "Hispanic American":
+                            percentage = data.getPrcntHispanic() * 100;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    // if percentage is greater or equal to user_percentage, and advantageStatus from data is true, then count increases
                     if(percentage >= userPrcntage && data.getAdvantageStatus().equals("True")) {
                         count++;
                     }
@@ -259,7 +285,7 @@ public class ClimateEconJustice {
             curS = curS.getNext();
         }
 
-        return count; // replace this line
+        return count;
     }
 
     /**
@@ -278,23 +304,45 @@ public class ClimateEconJustice {
         StateNode curS = firstState;
         int count = 0;
 
+        //traversing through state nodes
 
         while(curS != null) {
             CountyNode curC = curS.getDown();
+
+            //traversing through county nodes
+
             while(curC != null) {
                 CommunityNode curCom = curC.getDown();
+                double percentage = 0.0;
 
+                //traversing through community nodes
                 while(curCom != null) {
-                    Data data = curCom.getInfo();
-                    double percentage = switch (race) {
-                        case "African American" -> data.getPrcntAfricanAmerican() * 100;
-                        case "Native American" -> data.getPrcntNative() * 100;
-                        case "Asian American" -> data.getPrcntAsian() * 100;
-                        case "White American" -> data.getPrcntWhite() * 100;
-                        case "Hispanic American" -> data.getPrcntHispanic() * 100;
-                        default -> 0.0;
-                    };
 
+                    //gets the data from each community
+                    Data data = curCom.getInfo();
+
+                    //goes through each 'race' choice
+                    switch (race) {
+                        case "African American":
+                            percentage = data.getPrcntAfricanAmerican() * 100;
+                            break;
+                        case "Native American":
+                            percentage = data.getPrcntNative() * 100;
+                            break;
+                        case "Asian American":
+                            percentage = data.getPrcntAsian() * 100;
+                            break;
+                        case "White American":
+                            percentage = data.getPrcntWhite() * 100;
+                            break;
+                        case "Hispanic American":
+                            percentage = data.getPrcntHispanic() * 100;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    // if percentage is greater or equal to user_percentage, and advantageStatus from data is false, then count increases
                     if(percentage >= userPrcntage && data.getAdvantageStatus().equals("False")) {
                         count++;
                     }
@@ -305,7 +353,7 @@ public class ClimateEconJustice {
             curS = curS.getNext();
         }
 
-        return count; // replace this line
+        return count;
     }
     
     /** 
@@ -318,18 +366,26 @@ public class ClimateEconJustice {
     public ArrayList<StateNode> statesPMLevels ( double PMlevel ) {
 
         ArrayList<StateNode> arrayListState = new ArrayList<>();
-        ArrayList<String> arrayListCom = new ArrayList<>();
         StateNode curS = firstState;
 
+        //traversing through State node
         while(curS != null) {
             CountyNode curC = curS.getDown();
+
+            //traversing through county node
             while(curC != null) {
                 CommunityNode curCom = curC.getDown();
 
+                //traversing through community node
                 while(curCom != null) {
                     Data data = curCom.getInfo();
+
+                    //if data from each community is greater than the user inputted pm level 'PMlevel' and then if
+                    // the arraylist has that contained state from the community, it adds it into the array list
                     if(data.getPMlevel() >= PMlevel) {
-                        arrayListCom.add(curCom.getName());
+                        if(!arrayListState.contains(curS)) {
+                            arrayListState.add(curS);
+                        }
                     }
 
                     curCom = curCom.getNext();
@@ -339,28 +395,7 @@ public class ClimateEconJustice {
             curS = curS.getNext();
         }
 
-
-        while(curS != null) {
-            CountyNode curC = curS.getDown();
-            while(curC != null) {
-                CommunityNode curCom = curC.getDown();
-                int i = 0;
-                while(curCom != null && arrayListCom.size() > i) {
-                    if(curCom.getName().equals(arrayListCom.get(i))) {
-                        arrayListState.add(curS);
-                    }
-                    i++;
-                    curCom = curCom.getNext();
-                }
-                curC = curC.getNext();
-            }
-            curS = curS.getNext();
-        }
-
-       HashSet<StateNode> hashSetState = new HashSet<>(arrayListState);
-
-        // WRITE YOUR METHOD HERE
-        return new ArrayList<>(hashSetState); // replace this line
+        return arrayListState;
     }
 
     /**
@@ -373,8 +408,35 @@ public class ClimateEconJustice {
      */
     public int chanceOfFlood ( double userPercntage ) {
 
-        // WRITE YOUR METHOD HERE
-        return 0; // replace this line
+        StateNode curS = firstState;
+        int count = 0;
+
+        //traversing through state node
+        while(curS != null) {
+            CountyNode curC = curS.getDown();
+
+            //traversing through county node
+            while(curC != null) {
+                CommunityNode curCom = curC.getDown();
+
+                //traversing through community node
+                while(curCom != null) {
+                    Data data = curCom.getInfo();
+
+                    //the data's chance of flood from community is greater than or equal to the user input percentage
+                    //then count increases
+
+                    if(data.getChanceOfFlood() >= userPercntage) {
+                        count++;
+                    }
+                    curCom = curCom.getNext();
+                }
+                curC = curC.getNext();
+            }
+            curS = curS.getNext();
+        }
+
+        return count;
     }
 
     /** 
@@ -386,8 +448,63 @@ public class ClimateEconJustice {
     */
     public ArrayList<CommunityNode> lowestIncomeCommunities ( String stateName ) {
 
-        //WRITE YOUR METHOD HERE
-        return null; // replace this line
+        StateNode curS = firstState;
+        //creates an array list that has 10 slots
+        ArrayList<CommunityNode> communityNodeArrayList = new ArrayList<>(10);
+
+        //while loop continues when state node is not null and state node's name is equal to stateName
+        while (curS != null && !(curS.getName().equals(stateName))) {
+            curS = curS.getNext();
+        }
+
+        CountyNode curC = curS.getDown();
+
+        //traversing through county node
+        while(curC != null) {
+            CommunityNode curCom = curC.getDown();
+
+            //traversing through community node
+            while(curCom != null) {
+
+                //if communityNodeArrayList is empty, then add current community node
+                if(communityNodeArrayList.isEmpty()) {
+                    communityNodeArrayList.add(curCom);
+
+                // else if communityNodeArrayList is full (meaning 10 slots are full), then do the following:
+                } else if(communityNodeArrayList.size() == 10) {
+                    int index = 0;
+
+                    //poverty is equal to the poverty line from the data from the first community inside the arrayList
+                    double poverty = communityNodeArrayList.get(0).getInfo().getPercentPovertyLine();
+
+                    //going through the communityNodeArrayList
+                    for(int i = 0; i < communityNodeArrayList.size(); i++) {
+
+                        //if poverty is greater than the poverty line from the data from each community inside the arrayList
+                        //then it will set the index i to index and the poverty will set to poverty line from the data from
+                        //ith's arraylist's community
+                        if(communityNodeArrayList.get(i).getInfo().getPercentPovertyLine() < poverty) {
+                            index = i;
+                            poverty = communityNodeArrayList.get(i).getInfo().getPercentPovertyLine();
+                        }
+                    }
+
+                    //if the current's community node's poverty line is greater than the poverty line in the index's community
+                    //node from the arraylist
+                    if(curCom.getInfo().getPercentPovertyLine() > communityNodeArrayList.get(index).getInfo().getPercentPovertyLine()) {
+                        communityNodeArrayList.set(index, curCom);
+                    }
+                // else if the communityNodeArrayList's size is in the range of 1 to 9 (inclusive) then it will add the current community
+                // node in the arraylist
+                } else {
+                    communityNodeArrayList.add(curCom);
+                }
+                curCom = curCom.getNext();
+            }
+            curC = curC.getNext();
+        }
+
+        return communityNodeArrayList; // replace this line
     }
 }
     
