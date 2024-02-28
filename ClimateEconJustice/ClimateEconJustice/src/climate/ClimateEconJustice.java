@@ -1,9 +1,7 @@
 package climate;
 
-import javax.swing.plaf.nimbus.State;
-import java.sql.Array;
 import java.util.ArrayList;
-import java.util.HashSet;
+
 
 
 /**
@@ -122,20 +120,27 @@ public class ClimateEconJustice {
         String[] lineArray = inputLine.split(",");
         String state = lineArray[2];
 
+        //creates a new County node
         CountyNode county = new CountyNode(lineArray[1], null, null);
 
+        //if state node's county node is null, then create the county node inside the state node
         if(curS.getDown() == null) {
             curS.setDown(county);
         }
 
+        //gets the state node that is equal to state from line 123
         while(curS != null && !curS.getName().equals(state)) {
             curS = curS.getNext();
         }
 
+        //creates the county node and connects it inside the state node
         CountyNode curC = curS.getDown();
         CountyNode prevC = null;
 
+        //traversing through the County Node
         while(curC != null) {
+
+            //if curC's name is equal to county's name, then it will stop
             if(curC.getName().equals(county.getName())) {
                 return;
             }
