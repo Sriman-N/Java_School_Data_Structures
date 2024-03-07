@@ -1,5 +1,7 @@
 package forensic;
 
+import com.sun.source.tree.Tree;
+
 /**
  * This class represents a forensic analysis system that manages DNA data using
  * BSTs.
@@ -64,10 +66,19 @@ public class ForensicAnalysis {
      * Do not add a StdIn.setFile statement, that is done for you in buildTree.
     */
     public Profile createSingleProfile() {
+        int numOfStrs = StdIn.readInt();
+        STR[] strArray = new STR[numOfStrs];
 
-        // WRITE YOUR CODE HERE
-        
-        return null; // update this line
+        for(int i = 0; i < numOfStrs; i++) {
+            String strString = StdIn.readString();
+            int occurrences = StdIn.readInt();
+            STR str = new STR(strString, occurrences);
+
+            strArray[i] = str;
+        }
+        Profile p = new Profile(strArray);
+
+        return p; // update this line
     }
 
     /**
@@ -81,7 +92,35 @@ public class ForensicAnalysis {
      */
     public void insertPerson(String name, Profile newProfile) {
 
-        // WRITE YOUR CODE HERE
+        TreeNode tree = new TreeNode(name, newProfile, null, null);
+
+        if(treeRoot == null) {
+            treeRoot = tree;
+        } else {
+            TreeNode cur = treeRoot;
+
+            while(cur != null) {
+                if(cur.getName().compareTo(tree.getName()) > 0) {
+                    if (cur.getLeft() == null) {
+                        cur.setLeft(tree);
+                        break;
+                    } else {
+                        cur = cur.getLeft();
+                    }
+                } else if (cur.getName().compareTo(tree.getName()) < 0) {
+                    if (cur.getRight() == null) {
+                        cur.setRight(tree);
+                        break;
+                    } else {
+                        cur = cur.getRight();
+                    }
+                }
+
+            }
+        }
+
+
+
     }
 
     /**
