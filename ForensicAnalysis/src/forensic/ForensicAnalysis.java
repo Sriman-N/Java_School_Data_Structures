@@ -76,9 +76,8 @@ public class ForensicAnalysis {
 
             strArray[i] = str;
         }
-        Profile p = new Profile(strArray);
 
-        return p; // update this line
+        return new Profile(strArray);
     }
 
     /**
@@ -118,9 +117,6 @@ public class ForensicAnalysis {
 
             }
         }
-
-
-
     }
 
     /**
@@ -133,8 +129,32 @@ public class ForensicAnalysis {
      */
     public int getMatchingProfileCount(boolean isOfInterest) {
         
-        // WRITE YOUR CODE HERE
-        return 0; // update this line
+        int count = 0;
+
+        TreeNode cur = treeRoot;
+
+        while(cur != null) {
+            if(cur.getProfile().getMarkedStatus() == isOfInterest) {
+                count++;
+                TreeNode a = null;
+                if(cur.getLeft() == null && cur.getRight() == null) {
+                    a = getTreeRoot();
+                    break;
+                } else if(cur.getLeft() == null && cur.getRight() != null) {
+                    a = cur.getRight();
+                    break;
+                } else if(cur.getLeft() != null && cur.getLeft() == null){
+                    a = cur.getLeft();
+                    break;
+                }
+                cur = a;
+            }
+        }
+
+
+        System.out.println(count);
+
+        return count;
     }
 
     /**
