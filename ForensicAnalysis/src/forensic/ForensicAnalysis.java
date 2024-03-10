@@ -136,18 +136,7 @@ public class ForensicAnalysis {
         while(cur != null) {
             if(cur.getProfile().getMarkedStatus() == isOfInterest) {
                 count++;
-                TreeNode a = null;
-                if(cur.getLeft() == null && cur.getRight() == null) {
-                    a = getTreeRoot();
-                    break;
-                } else if(cur.getLeft() == null && cur.getRight() != null) {
-                    a = cur.getRight();
-                    break;
-                } else if(cur.getLeft() != null && cur.getLeft() == null){
-                    a = cur.getLeft();
-                    break;
-                }
-                cur = a;
+                
             }
         }
 
