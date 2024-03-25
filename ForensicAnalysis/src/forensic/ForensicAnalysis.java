@@ -1,6 +1,7 @@
 package forensic;
 
-import com.sun.source.tree.Tree;
+
+import java.util.*;
 
 /**
  * This class represents a forensic analysis system that manages DNA data using
@@ -128,22 +129,10 @@ public class ForensicAnalysis {
      * @return the number of profiles according to the search mode marked
      */
     public int getMatchingProfileCount(boolean isOfInterest) {
-        
-        int count = 0;
-
         TreeNode cur = treeRoot;
 
-        while(cur != null) {
-            if(cur.getProfile().getMarkedStatus() == isOfInterest) {
-                count++;
-                
-            }
-        }
+        return traverseWithIsofinterest(cur, isOfInterest);
 
-
-        System.out.println(count);
-
-        return count;
     }
 
     /**
@@ -182,8 +171,36 @@ public class ForensicAnalysis {
      * occurrences, add a match
      */
     public void flagProfilesOfInterest() {
+        Stack<TreeNode> stack = new Stack<TreeNode>();
+        TreeNode cur = treeRoot;
 
-        // WRITE YOUR CODE HERE
+        while(cur != null || !stack.isEmpty()) {
+            while(cur != null) {
+                stack.push(cur);
+                cur = cur.getLeft();
+            }
+
+            cur = stack.pop();
+            Profile profile = cur.getProfile();
+            int lenSTRs = profile.getStrs().length;
+            int halfLenSTRs = (lenSTRs + 1) / 2;
+
+            int countMatchingSTRs = 0;
+            for(STR str : profile.getStrs()) {
+                int firstSequenceOccur = numberOfOccurrences(firstUnknownSequence, str.getStrString());
+                int secondSequenceOccur = numberOfOccurrences(secondUnknownSequence, str.getStrString());
+                int profileOccur = str.getOccurrences();
+
+                if(profileOccur == firstSequenceOccur + secondSequenceOccur) {
+                    countMatchingSTRs++;
+                }
+            }
+
+            if(countMatchingSTRs >= halfLenSTRs) {
+                profile.setInterestStatus(true);
+            }
+            cur = cur.getRight();
+        }
     }
 
     /**
@@ -196,8 +213,27 @@ public class ForensicAnalysis {
      */
     public String[] getUnmarkedPeople() {
 
-        // WRITE YOUR CODE HERE
-        return null; // update this line
+        Queue<TreeNode> q = new Queue<TreeNode>();
+        String[] array = new String[getMatchingProfileCount(false)];
+        TreeNode cur = treeRoot;
+        q.enqueue(cur);
+      
+        int index = 0;
+        while(cur != null && !q.isEmpty()) {
+            TreeNode t = q.dequeue();
+            if(!t.getProfile().getMarkedStatus()) {
+                array[index] = t.getName();
+                index++;
+            }
+        
+            if(cur.getLeft() != null) {
+                q.enqueue(cur.getLeft());
+            }
+            if(cur.getRight() != null) {
+                q.enqueue(cur.getRight());
+            }
+        }
+        return array; // update this line
     }
 
     /**
@@ -210,7 +246,26 @@ public class ForensicAnalysis {
      * @param fullName the full name of the person to delete
      */
     public void removePerson(String fullName) {
-        // WRITE YOUR CODE HERE
+        TreeNode cur = treeRoot;
+        TreeNode parent = null;
+        while(cur != null) {
+            if(cur.getName().compareTo(fullName) > 0) {
+                cur = cur.getRight();
+                parent = cur;
+            } else if(cur.getName().compareTo(fullName) < 0) {
+                cur = cur.getLeft();
+                parent = cur;
+            } else if(cur.getName().compareTo(fullName) == 0) {
+                break;
+            }
+        }
+        if(cur.getLeft() == null && cur.getRight() == null) {
+            if(parent.getLeft() == cur) {
+                parent.setLeft(null);
+            } else if(parent.getRight() == cur) {
+                parent.setRight(null);
+            }
+        } //else if()
         
     }
 
@@ -276,6 +331,24 @@ public class ForensicAnalysis {
      */
     public void setSecondUnknownSequence(String newSecond) {
         secondUnknownSequence = newSecond;
+    }
+
+    private int traverseWithIsofinterest(TreeNode x, boolean isOfInterest) {
+
+        if(x == null) {
+            return 0;
+        }
+
+        int count = 0;
+
+        if(x.getProfile().getMarkedStatus() == isOfInterest) {
+            count++;
+        }
+
+        count+=traverseWithIsofinterest(x.getLeft(), isOfInterest);
+        count+=traverseWithIsofinterest(x.getRight(), isOfInterest);
+
+        return count;
     }
 
 }
