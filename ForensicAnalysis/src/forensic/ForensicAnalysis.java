@@ -3,6 +3,8 @@ package forensic;
 
 import java.util.*;
 
+import javax.swing.plaf.metal.MetalIconFactory.TreeControlIcon;
+
 /**
  * This class represents a forensic analysis system that manages DNA data using
  * BSTs.
@@ -171,25 +173,25 @@ public class ForensicAnalysis {
      * occurrences, add a match
      */
     public void flagProfilesOfInterest() {
-        Stack<TreeNode> stack = new Stack<TreeNode>();
+        Stack<TreeNode> s = new Stack<TreeNode>();
         TreeNode cur = treeRoot;
 
-        while(cur != null || !stack.isEmpty()) {
+        while(cur != null || !s.isEmpty()) {
             while(cur != null) {
-                stack.push(cur);
+                s.push(cur);
                 cur = cur.getLeft();
             }
 
-            cur = stack.pop();
-            Profile profile = cur.getProfile();
-            int lenSTRs = profile.getStrs().length;
-            int halfLenSTRs = (lenSTRs + 1) / 2;
+            cur = s.pop();
+            int halfLenSTRs = (cur.getProfile().getStrs().length + 1) / 2;
 
+            STR[] strs = cur.getProfile().getStrs();
+            
             int countMatchingSTRs = 0;
-            for(STR str : profile.getStrs()) {
-                int firstSequenceOccur = numberOfOccurrences(firstUnknownSequence, str.getStrString());
-                int secondSequenceOccur = numberOfOccurrences(secondUnknownSequence, str.getStrString());
-                int profileOccur = str.getOccurrences();
+            for(int i = 0; i < strs.length; i++) {
+                int firstSequenceOccur = numberOfOccurrences(firstUnknownSequence, strs[i].getStrString());
+                int secondSequenceOccur = numberOfOccurrences(secondUnknownSequence, strs[i].getStrString());
+                int profileOccur = strs[i].getOccurrences();
 
                 if(profileOccur == firstSequenceOccur + secondSequenceOccur) {
                     countMatchingSTRs++;
@@ -197,7 +199,7 @@ public class ForensicAnalysis {
             }
 
             if(countMatchingSTRs >= halfLenSTRs) {
-                profile.setInterestStatus(true);
+                cur.getProfile().setInterestStatus(true);
             }
             cur = cur.getRight();
         }
@@ -220,9 +222,9 @@ public class ForensicAnalysis {
       
         int index = 0;
         while(cur != null && !q.isEmpty()) {
-            TreeNode t = q.dequeue();
-            if(!t.getProfile().getMarkedStatus()) {
-                array[index] = t.getName();
+            cur = q.dequeue();
+            if(cur.getProfile().getMarkedStatus() == false) {
+                array[index] = cur.getName();
                 index++;
             }
         
@@ -233,6 +235,8 @@ public class ForensicAnalysis {
                 q.enqueue(cur.getRight());
             }
         }
+
+        
         return array; // update this line
     }
 
@@ -246,27 +250,9 @@ public class ForensicAnalysis {
      * @param fullName the full name of the person to delete
      */
     public void removePerson(String fullName) {
-        TreeNode cur = treeRoot;
-        TreeNode parent = null;
-        while(cur != null) {
-            if(cur.getName().compareTo(fullName) > 0) {
-                cur = cur.getRight();
-                parent = cur;
-            } else if(cur.getName().compareTo(fullName) < 0) {
-                cur = cur.getLeft();
-                parent = cur;
-            } else if(cur.getName().compareTo(fullName) == 0) {
-                break;
-            }
-        }
-        if(cur.getLeft() == null && cur.getRight() == null) {
-            if(parent.getLeft() == cur) {
-                parent.setLeft(null);
-            } else if(parent.getRight() == cur) {
-                parent.setRight(null);
-            }
-        } //else if()
-        
+
+        treeRoot = delete(treeRoot, fullName);
+
     }
 
     /**
@@ -275,8 +261,11 @@ public class ForensicAnalysis {
      * Requires the use of getUnmarkedPeople and removePerson.
      */
     public void cleanupTree() {
-        // WRITE YOUR CODE HERE
+        String[] unmarkedPeople = getUnmarkedPeople();
 
+        for(int i = 0; i < unmarkedPeople.length; i++) {
+            removePerson(unmarkedPeople[i]);
+        }
     }
 
     /**
@@ -349,6 +338,45 @@ public class ForensicAnalysis {
         count+=traverseWithIsofinterest(x.getRight(), isOfInterest);
 
         return count;
+    }
+
+    private TreeNode min(TreeNode t) {
+        if(t.getLeft() == null) {
+            return t;
+        } else {
+            return min(t.getLeft());
+        }
+    }
+
+    private TreeNode deleteMin(TreeNode x) {
+        if(x.getLeft() == null) {
+            return x.getRight();
+        }
+        x.setLeft(deleteMin(x.getLeft()));
+        return x;
+    }
+    private TreeNode delete(TreeNode x, String fullName) {
+        if(x == null) return null;
+        int cmp = fullName.compareTo(x.getName());
+        if(cmp > 0) {
+            x.setRight(delete(x.getRight(), fullName));
+        } else if(cmp < 0) {
+            x.setLeft(delete(x.getLeft(), fullName));
+        } else {
+            if(x.getRight() == null) {
+                return x.getLeft();
+            }
+            if(x.getLeft() == null) {
+                return x.getRight();
+            }
+
+            TreeNode t = x;
+            x = min(t.getRight());
+            x.setRight(deleteMin(t.getRight()));
+            x.setLeft(t.getLeft());
+        }
+        
+        return x;
     }
 
 }
